@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14.2
+    environment:
+      POSTGRES_USER: backend
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+    volumes:
+      - backend-postgres:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    environment:
+      - NODE_ENV = development
+    volumes:
+      - ./backend:/opt/app
+    links:
+      - postgres
+    ports:
+      - '8010:3000'
+    env_file:
+      - .env.backend
+    command: yarn start:dev
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile
+    environment:
+      - NODE_ENV = development
+    volumes:
+      - ./frontend:/opt/app
+    links:
+      - backend
+    ports:
+      - '8011:3000'
+    env_file:
+      - .env.frontend
+    command: yarn start
+
+volumes:
+  backend-postgres:
